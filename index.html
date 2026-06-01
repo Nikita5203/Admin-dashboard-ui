@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, Arial, sans-serif;
+      background: #0b1220;
+      color: #e8eefc;
+      display: flex;
+      min-height: 100vh;
+    }
+    /* Sidebar */
+    .sidebar {
+      width: 230px;
+      padding: 18px;
+      background: #0f1a33;
+      border-right: 1px solid rgba(255,255,255,.06);
+    }
+    .brand {
+      font-weight: 800;
+      letter-spacing: .3px;
+      font-size: 18px;
+      margin-bottom: 20px;
+    }
+    .nav a {
+      display: block;
+      color: #a9b6da;
+      text-decoration: none;
+      padding: 10px 12px;
+      border-radius: 10px;
+      margin-bottom: 6px;
+      transition: .2s;
+    }
+    .nav a:hover { background: rgba(124, 92, 255, .12); color: #e8eefc; }
+
+    /* Main */
+    .main { flex: 1; padding: 18px; }
+    .topbar {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .search {
+      flex: 1;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.06);
+      border-radius: 14px;
+      padding: 10px 12px;
+    }
+    .search input {
+      background: transparent;
+      border: 0;
+      outline: 0;
+      color: #e8eefc;
+      width: 100%;
+      font-size: 14px;
+    }
+    .badge {
+      padding: 10px 14px;
+      border-radius: 14px;
+      background: rgba(124, 92, 255, .14);
+      border: 1px solid rgba(124, 92, 255, .25);
+      color: #dcd6ff;
+      font-weight: 700;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    /* Cards + chart */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .card {
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.06);
+      border-radius: 16px;
+      padding: 14px;
+    }
+    .card h3 { font-size: 13px; color: #a9b6da; margin-bottom: 8px; }
+    .card .num { font-size: 22px; font-weight: 850; margin-bottom: 6px; }
+    .card small { color: #97a8d3; }
+
+    .chart-wrap {
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.06);
+      border-radius: 16px;
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+    .chart-title { display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px; }
+    .chart-title strong { font-size: 14px; }
+    .chip {
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.03);
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      color: #a9b6da;
+      cursor: pointer;
+      user-select: none;
+    }
+    .bars {
+      height: 160px;
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+      padding: 10px;
+      border-radius: 12px;
+      background: rgba(0,0,0,.15);
+    }
+    .bar {
+      flex: 1;
+      min-width: 24px;
+      background: linear-gradient(180deg, rgba(124,92,255,.95), rgba(124,92,255,.18));
+      border: 1px solid rgba(124,92,255,.35);
+      border-radius: 10px 10px 6px 6px;
+      position: relative;
+      transition: .25s;
+    }
+    .bar:hover { transform: translateY(-4px); }
+
+    /* Table */
+    .table-wrap {
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.06);
+      border-radius: 16px;
+      padding: 14px;
+    }
+    .table-top {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom: 10px;
+      gap: 12px;
+    }
+    .table-top strong { font-size: 14px; }
+    .table-wrap select {
+      background: rgba(255,255,255,.03);
+      color: #e8eefc;
+      border: 1px solid rgba(255,255,255,.10);
+      padding: 8px 10px;
+      border-radius: 12px;
+      outline: 0;
+      cursor: pointer;
+    }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 10px 8px; text-align: left; font-size: 13px; }
+    th { color: #a9b6da; border-bottom: 1px solid rgba(255,255,255,.08); }
+    tr { border-bottom: 1px solid rgba(255,255,255,.06); }
+    td .pill {
+      display:inline-block;
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      border: 1px solid rgba(255,255,255,.10);
+    }
+    .pill.ok { color: #b8ffd6; background: rgba(54, 214, 131, .12); border-color: rgba(54, 214, 131, .25); }
+    .pill.warn { color: #ffe8a3; background: rgba(255, 184, 77, .12); border-color: rgba(255, 184, 77, .25); }
+    .pill.bad { color: #ffb3b3; background: rgba(255, 77, 77, .12); border-color: rgba(255, 77, 77, .25); }
+
+    .row-actions button {
+      cursor: pointer;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.03);
+      color: #e8eefc;
+      padding: 7px 10px;
+      border-radius: 12px;
+      transition: .2s;
+    }
+    .row-actions button:hover { background: rgba(124,92,255,.14); border-color: rgba(124,92,255,.35); }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .sidebar { width: 190px; }
+      .cards { grid-template-columns: 1fr; }
+      .search { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="brand">Admin UI</div>
+    <nav class="nav">
+      <a href="#">Dashboard</a>
+      <a href="#">Users</a>
+      <a href="#">Reports</a>
+      <a href="#">Settings</a>
+    </nav>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <!-- Topbar -->
+    <div class="topbar">
+      <div class="search">
+        <span style="color:#a9b6da;font-weight:700;">🔎</span>
+        <input id="searchInput" type="text" placeholder="Search recent items..." />
+      </div>
+      <div class="badge">Online • 128 Users</div>
+    </div>
+
+    <!-- Cards -->
+    <section class="cards">
+      <div class="card">
+        <h3>Total Sales</h3>
+        <div class="num" id="salesNum">$24,560</div>
+        <small id="salesNote">+12% this month</small>
+      </div>
+      <div class="card">
+        <h3>Active Users</h3>
+        <div class="num" id="usersNum">1,284</div>
+        <small id="usersNote">+4% today</small>
+      </div>
+      <div class="card">
+        <h3>Open Alerts</h3>
+        <div class="num" id="alertsNum">7</div>
+        <small id="alertsNote">Requires attention</small>
+      </div>
+    </section>
+
+    <!-- Chart -->
+    <section class="chart-wrap">
+      <div class="chart-title">
+        <strong>Weekly Revenue</strong>
+        <span class="chip" id="randomizeBtn" title="Generate new random data">Randomize</span>
+      </div>
+      <div class="bars" id="bars"></div>
+    </section>
+
+    <!-- Table -->
+    <section class="table-wrap">
+      <div class="table-top">
+        <strong>Recent Activity</strong>
+        <select id="statusFilter">
+          <option value="all">All</option>
+          <option value="ok">Success</option>
+          <option value="warn">Warning</option>
+          <option value="bad">Failed</option>
+        </select>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Status</th>
+            <th style="width:180px;">Action</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <script>
+    // ----- Simple mock data -----
+    let rows = [
+      { item: "Order #1048", status: "ok" },
+      { item: "Login attempt", status: "warn" },
+      { item: "Payment #8891", status: "ok" },
+      { item: "Report export", status: "bad" },
+      { item: "User signup", status: "ok" },
+      { item: "API request", status: "warn" }
+    ];
+
+    const tableBody = document.getElementById("tableBody");
+    const statusFilter = document.getElementById("statusFilter");
+    const searchInput = document.getElementById("searchInput");
+
+    function statusPill(status) {
+      const map = {
+        ok: { text: "Success", cls: "ok" },
+        warn: { text: "Warning", cls: "warn" },
+        bad: { text: "Failed", cls: "bad" }
+      };
+      const v = map[status];
+      return `<span class="pill ${v.cls}">${v.text}</span>`;
+    }
+
+    function renderTable() {
+      const q = searchInput.value.trim().toLowerCase();
+      const filter = statusFilter.value;
+
+      const filtered = rows.filter(r => {
+        const matchText = r.item.toLowerCase().includes(q);
+        const matchStatus = (filter === "all") ? true : r.status === filter;
+        return matchText && matchStatus;
+      });
+
+      tableBody.innerHTML = filtered.map((r) => {
+        return `
+          <tr>
+            <td>${r.item}</td>
+            <td>${statusPill(r.status)}</td>
+            <td class="row-actions">
+              <button data-index="${rows.indexOf(r)}">View</button>
+              <button data-del="${rows.indexOf(r)}">Delete</button>
+            </td>
+          </tr>
+        `;
+      }).join("");
+
+      // attach button events
+      tableBody.querySelectorAll("button[data-index]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const i = Number(btn.getAttribute("data-index"));
+          alert("Viewing: " + rows[i].item);
+        });
+      });
+
+      tableBody.querySelectorAll("button[data-del]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const i = Number(btn.getAttribute("data-del"));
+          rows.splice(i, 1);
+          renderTable();
+        });
+      });
+    }
+
+    statusFilter.addEventListener("change", renderTable);
+    searchInput.addEventListener("input", renderTable);
+
+    // ----- Simple bar chart (no library) -----
+    const bars = document.getElementById("bars");
+    const randomizeBtn = document.getElementById("randomizeBtn");
+
+    function makeBars(values) {
+      bars.innerHTML = "";
+      values.forEach(v => {
+        const bar = document.createElement("div");
+        bar.className = "bar";
+        bar.style.height = v + "%";
+        bar.title = v + "%";
+        bars.appendChild(bar);
+      });
+    }
+
+    function randomValues() {
+      // 7 bars for a week, between 20% and 95%
+      return Array.from({ length: 7 }, () => Math.floor(20 + Math.random() * 75));
+    }
+
+    // Init
+    makeBars(randomValues());
+    renderTable();
+
+    randomizeBtn.addEventListener("click", () => {
+      makeBars(randomValues());
+    });
+  </script>
+</body>
+</html>
